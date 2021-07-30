@@ -65,7 +65,7 @@ This data will loaded into an analytics table in Amazon Redshift to allow for an
 
 5. The data will be mapped to the following ERD:
 
-![ERD](https://github.com/sama26/UDE_capstone_project/blob/main/MOT_Database.jpg?raw=true)
+![ERD](https://github.com/sama26/UDE_capstone_project/blob/main/MOT_Database.jpeg)
 
 6. List the steps necessary to pipeline the data into the chosen data model
 
