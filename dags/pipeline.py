@@ -15,10 +15,11 @@ from loader_subdag import loader_subdag
 from helpers.sql_queries import SqlQueries
 
 s3_bucket = 'mot-data-ude'
-item_s3_key = "df_item_json"
-result_s3_key = "df_result"
+item_s3_key = "data/df_item_json"
+result_s3_key = "data/df_result"
 retries = 3 # Number of retries to be attempted if the DAG fails
 retry_delay_minutes = 5 # Delay in minutes before retry is attempted
+max_error = 1000 # Max errors allowed while staging data into redshift
 
 default_args = {
     'owner': 'sama_26@hotmail.com',
@@ -48,18 +49,19 @@ create_tables_task = PostgresOperator(
 )
 
 stage_results_to_redshift = StageToRedshiftOperator(
-    task_id='Stage_results',
+    task_id='stage_results',
     redshift_conn_id = "redshift",
     aws_credential_id="aws_credentials",
     table="staging_results",
     s3_bucket = s3_bucket,
     s3_key = result_s3_key,
     file_format = "csv",
-    dag=dag,
+    max_error = max_error,
+    dag=dag
     )
 
 stage_items_to_redshift = StageToRedshiftOperator(
-    task_id='Stage_items',
+    task_id='stage_items',
     dag=dag,
     redshift_conn_id = "redshift",
     aws_credential_id="aws_credentials",
@@ -67,10 +69,11 @@ stage_items_to_redshift = StageToRedshiftOperator(
     s3_bucket = s3_bucket,
     s3_key = item_s3_key,
     file_format = "json",
+    max_error = max_error
     )
 
 load_test_result_table = LoadFactOperator(
-    task_id='Load_test_result_fact_table',
+    task_id='load_test_result_fact_table',
     redshift_conn_id = 'redshift',
     create_sql_stmt = SqlQueries.test_result_table_insert,
     dag=dag
@@ -86,16 +89,16 @@ load_test_item_dimension_table = SubDagOperator(
         start_date=default_args['start_date'],
         replace = True
     ),
-    task_id='Load_test_item_dim_table',
+    task_id='load_test_item_dim_table',
     dag=dag,
 )
 
 load_vehicle_dimension_table = SubDagOperator(
-    task_id='Load_vehicle_dim_table',
+    task_id='load_vehicle_dim_table',
     dag=dag,
     subdag=loader_subdag(
         parent_dag_name='mot_data_pipeline',
-        task_id="Load_vehicle_dim_table",
+        task_id="load_vehicle_dim_table",
         redshift_conn_id="redshift",
         table="vehicle",
         create_sql_stmt=SqlQueries.vehicle_table_insert,
@@ -105,7 +108,7 @@ load_vehicle_dimension_table = SubDagOperator(
 	)
 
 run_quality_checks = DataQualityOperator(
-    task_id='Run_data_quality_checks',
+    task_id='run_data_quality_checks',
     dag=dag
 )
 
@@ -113,7 +116,7 @@ end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
 
 start_operator >> create_tables_task
 
-create_tables_task >> Stage_results_to_redshift
+create_tables_task >> stage_results_to_redshift
 create_tables_task >> stage_items_to_redshift
 
 stage_results_to_redshift >> load_test_result_table

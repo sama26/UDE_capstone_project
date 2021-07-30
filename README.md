@@ -89,31 +89,48 @@ The lookup tables included with the dataset could be included as additional dime
 
 ### Step 4: Run ETL to Model the Data
 
-7. Create the data pipelines and the data model
-8. Include a data dictionary
-9. Run data quality checks to ensure the pipeline ran as expected:
-    * Integrity constraints on the relational database (e.g., unique key, data type, etc.)
+7. The ETL pipeline has been written in dags/pipeline.py. Note the dependencies on the subdag, operators and helper class.
 
-    * Unit tests for the scripts to ensure they are doing the right thing
+8. The Data Dictionaty can be found in data_dictionary.ods
 
-    * Source/count checks to ensure completeness
+9. Data quality checks can be found in the data_quality.py operator
 
 ### Step 5: Complete Project Write Up
 
-10. What's the goal? What queries will you want to run? How would Spark or Airflow be incorporated? Why did you choose the model you chose?
+10. The goal of this project is to enable the analysis of the 2020 UK MOT test data. Analysts will run queries to determine the types, makes and models of vehicles which require MOT tests, the failure rates for different cards, and the failure rates at different mileages/ages.
 
-11. Clearly state the rationale for the choice of tools and technologies for the project.
+11. Due to the size of the datasets (both 10s of millions of rows) spark is the most appropriate tool for analysing the data. As the data would need to be loaded and transformed into Amazon Redshift for analysis; Airflow is required to orchestrate the flow.
 
-12. Document the steps of the process.
+12. The ETL process follows the following stages:
 
-13. Propose how often the data should be updated and why.
+  1. Create the staging, and final tables in Redshift
 
-14. Post your write-up and final data model in a GitHub repo.
+  2. Move the data from S3 into the staging tables
 
-15. Include a description of how you would approach the problem differently under the following scenarios:
+  3. Create the final tables from the staging tables
 
-  * If the data was increased by 100x.
+  4. Run quality checks on the final tables
 
-  * If the pipelines were run on a daily basis by 7am.
+13. The data is released from the UK DVLA on an annual basis so there would be no need to update the data more frequently than that.
 
-  * If the database needed to be accessed by 100+ people.
+14. All content related to this project can be found in this Github Repo.
+
+15. Future Work:
+
+  ###### If the data was increased by 100x
+
+  I would scale up the Redshift cluster with more, faster cores in order to process the work.
+
+  I would download the data from the DVLA directly into S3 rather than via my local workstation.
+
+  I would look at partitioning the data to optimise the read speeds.
+
+  Lastly, I would run Airflow from AWS rather than a local workstation.
+
+  ###### If the pipelines were run on a daily basis by 7am
+
+   I would update the pipeline to download the data directly to S3 as soon as it were available. I would then update the DAG to run on a daily basis, with an SLA to ensure it as complete by 7am
+
+  ###### If the database needed to be accessed by 100+ people.
+
+  I would invest in a much faster Redshift cluster, and ensure that the data were partitioned as efficiently as possible. 

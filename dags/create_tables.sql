@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.staging_items (
 	rfr_id varchar(256),
 	rfr_type_code varchar(256),
 	location_id varchar(256),
-	dangerous_mark varchar(256),
+	dangerous_mark varchar(256)
 );
 
 CREATE TABLE IF NOT EXISTS public.staging_results (
@@ -20,38 +20,38 @@ CREATE TABLE IF NOT EXISTS public.staging_results (
 	colour varchar(256),
 	fuel_type varchar(256),
 	cylinder_capacity varchar(256),
-	first_use_date varchar(256),
+	first_use_date varchar(256)
 );
 
 CREATE TABLE IF NOT EXISTS public.test_result (
-	test_id integer NOT NULL,
-	vehicle_id integer NOT NULL,
-	test_date, date,
-	test_class_id integer,
-	test_type char,
-	test_result char,
-	test_mileage integer,
-	postcode_area char,
+	test_id integer(10) NOT NULL,
+	vehicle_id integer(10) NOT NULL,
+	test_date date,
+	test_class_id integer(2),
+	test_type char(2),
+	test_result char(5),
+	test_mileage integer(7),
+	postcode_area char(2),
 	CONSTRAINT test_result_pkey PRIMARY KEY (test_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.test_item (
 	id integer IDENTITY NOT NULL,
-	test_id integer NOT NULL,
-	rfr_id integer,
-	rfr_type_code char,
-	location_id integer,
-	dangerous_mark char,
+	test_id integer(10) NOT NULL,
+	rfr_id integer(4),
+	rfr_type_code char(1),
+	location_id integer(4),
+	dangerous_mark char(1),
 	CONSTRAINT test_item_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS public.vehicle (
-	vehicle_id integer NOT NULL,
-	make char,
-	model char,
-	colour char,
-	fuel_type char,
-	cylinder_capacity varchar,
-	first_use_date datetime,
+	vehicle_id integer(10) NOT NULL,
+	make char(50),
+	model char(50),
+	colour char(16),
+	fuel_type char(2),
+	cylinder_capacity integer(10),
+	first_use_date date,
 	CONSTRAINT vehicle_pkey PRIMARY KEY (vehicle_id)
 );

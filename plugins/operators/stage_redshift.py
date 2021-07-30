@@ -10,7 +10,8 @@ class StageToRedshiftOperator(BaseOperator):
         FROM '{}'
         ACCESS_KEY_ID '{}'
         SECRET_ACCESS_KEY '{}'
-        FORMAT AS '{}'
+        FORMAT AS {}
+        MAXERROR as {}
         """
     @apply_defaults
 
@@ -22,6 +23,7 @@ class StageToRedshiftOperator(BaseOperator):
                 s3_bucket="",
                 s3_key="",
                 file_format="",
+                max_error="",
                 *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -31,6 +33,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_key = s3_key
         self.aws_credential_id = aws_credential_id
         self.file_format = file_format
+        self.max_error = max_error
 
 
     def execute(self, context):
@@ -53,7 +56,8 @@ class StageToRedshiftOperator(BaseOperator):
                 s3_path,
                 credentials.access_key,
                 credentials.secret_key,
-                'json auto'
+                "json 'auto'",
+                self.max_error
                 )
 
         else:
@@ -62,7 +66,8 @@ class StageToRedshiftOperator(BaseOperator):
                 s3_path,
                 credentials.access_key,
                 credentials.secret_key,
-                'csv'
+                'csv',
+                self.max_error
                 )
 
         redshift.run(formatted_sql)
