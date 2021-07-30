@@ -21,17 +21,19 @@ To help guide your project, we've broken it down into a series of steps.
 Since the scope of the project will be highly dependent on the data, these two things happen simultaneously. In this step, you’ll:
 
 1. I have sourced my own datasets for this project:
-  * UK MOT testing data results (2020)
+  * UK MOT testing data results (2020) 'results'
 
     http://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2020.zip
 
-  * UK MOT testing data failure item (2020)
+  * UK MOT testing data failure item (2020) 'items'
 
     http://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_item_2020.zip
 
+    *Note that although both datasets are provided in zipped batches of .csv files, for  the purposes of this submission the 'data failure item' dataset has been converted into json.
+
 #### Initial observations of the data:
 
-* The results dataset has 75,907,074 rows, and the failures dataset has 38,594,013
+* The items dataset has 75,907,074 rows, and the results dataset has 38,594,013
 * The datasets come with a set of lookup tables
 * The datasets come with a document explaining the structure, and any acronyms.
 
@@ -48,17 +50,17 @@ This data will loaded into an analytics table in Amazon Redshift to allow for an
 ### Step 2: Explore and Assess the Data
 
 3. Each dataset is explored in the Investigation.ipynb notebook. To summarise:
-  * The datasets appear to be easily joined on the 'test_id' field, which appears to be the primary key for the failures dataset.
+  * The datasets appear to be easily joined on the 'test_id' field, which appears to be the primary key for the results dataset.
 
   * Neither table has any NaN values, however there are large numbers of Null values:
-    * The results dataset has 71,960,197 NULL values in the 'dangerous_mark' column. Documentation suggests this is how a 'non dangerous' result is recorded. Dangerous results are marked as 'D'
+    * The items dataset has 71,960,197 NULL values in the 'dangerous_mark' column. Documentation suggests this is how a 'non dangerous' result is recorded. Dangerous results are marked as 'D'
 
-    * The failures dataset has 1,007,292 NULL values in the 'test_mileage column', 77,014 in the 'cylinder_capacity' column and 631 in the 'first_use_date column'. At most, this represents less than 3% of this dataset.
+    * The results dataset has 1,007,292 NULL values in the 'test_mileage column', 77,014 in the 'cylinder_capacity' column and 631 in the 'first_use_date column'. At most, this represents less than 3% of this dataset.
 
 4. The following steps should be taken to clean the data during ETL:
-  * The 'dangerous_mark' field should be changed to boolean.
+  * The null entries in the 'dangerous_mark' field should be changed to 'N'.
 
-  * As the NULL values in the 'failures' dataset only represent less than 3% of the data, these rows should be dropped.
+  * As the NULL values in the results dataset only represent less than 3% of the data, these rows should be dropped.
 
 
 ### Step 3: Define the Data Model
@@ -67,7 +69,23 @@ This data will loaded into an analytics table in Amazon Redshift to allow for an
 
 ![ERD](https://github.com/sama26/UDE_capstone_project/blob/main/MOT_Database.jpeg)
 
-6. List the steps necessary to pipeline the data into the chosen data model
+This is similar to the source schema but creates a new dimension table for the MOT vehicle. This results in a star schema, containing a fact table 'test_result', and 2 dimension tables; 'test_item' and 'vehicle'.
+
+The test_item table will need to have an additional ID field to serve as a primary key
+
+The lookup tables included with the dataset could be included as additional dimension tables at a later date if required, or simply used to enrich the existing tables.
+
+6. The following steps will be taken to pipeline  the data into this data model:
+
+  1. The dataset files will be loaded into an S3 bucket in the us-west-2 region
+
+  2. The files will be loaded into staging tables within a Redshift cluster in the same region
+
+  3. Pyspark queries will be run to create the new fact and dimension tables
+
+  4. Data Quality checks will be carried out on all tables.
+
+  5. This will be orchestrated by an Airflow DAG running on a local computer
 
 ### Step 4: Run ETL to Model the Data
 
