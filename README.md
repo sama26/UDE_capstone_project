@@ -20,26 +20,52 @@ To help guide your project, we've broken it down into a series of steps.
 
 Since the scope of the project will be highly dependent on the data, these two things happen simultaneously. In this step, you’ll:
 
-1. The Udacity provided datasets have been used for this project:
-  * Bus Service Usage 2019 - 2020
+1. I have sourced my own datasets for this project:
+  * UK MOT testing data results (2020)
 
-    https://tfl.gov.uk/info-for/open-data-users/our-open-data?intcmp=3671#on-this-page-3
+    http://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_result_2020.zip
 
-  * Average speeds on all bus routes 2019 - 2020
+  * UK MOT testing data failure item (2020)
 
-    https://tfl.gov.uk/info-for/open-data-users/our-open-data?intcmp=3671#on-this-page-3
+    http://data.dft.gov.uk/anonymised-mot-test/test_data/dft_test_item_2020.zip
 
-2.
+#### Initial observations of the data:
+
+* The results dataset has 75,907,074 rows, and the failures dataset has 38,594,013
+* The datasets come with a set of lookup tables
+* The datasets come with a document explaining the structure, and any acronyms.
+
+#### Use Cases for the data:
+
+This data will loaded into an analytics table in Amazon Redshift to allow for analysis across the data in aggregate, such as:
+
+* Plotting MOT failure rate against car age
+
+* Analysing the cars which fail MOT's most often
+
+* Identifying the most common cars in the UK which are subject to MOT
 
 ### Step 2: Explore and Assess the Data
 
-3. Explore the data to identify data quality issues, like missing values, duplicate data, etc.
+3. Each dataset is explored in the Investigation.ipynb notebook. To summarise:
+  * The datasets appear to be easily joined on the 'test_id' field, which appears to be the primary key for the failures dataset.
 
-4. Document steps necessary to clean the data
+  * Neither table has any NaN values, however there are large numbers of Null values:
+    * The results dataset has 71,960,197 NULL values in the 'dangerous_mark' column. Documentation suggests this is how a 'non dangerous' result is recorded. Dangerous results are marked as 'D'
+
+    * The failures dataset has 1,007,292 NULL values in the 'test_mileage column', 77,014 in the 'cylinder_capacity' column and 631 in the 'first_use_date column'. At most, this represents less than 3% of this dataset.
+
+4. The following steps should be taken to clean the data during ETL:
+  * The 'dangerous_mark' field should be changed to boolean.
+
+  * As the NULL values in the 'failures' dataset only represent less than 3% of the data, these rows should be dropped.
+
 
 ### Step 3: Define the Data Model
 
-5. Map out the conceptual data model and explain why you chose that model
+5. The data will be mapped to the following ERD:
+
+![ERD](https://github.com/sama26/UDE_capstone_project/blob/main/MOT_Database.jpg?raw=true)
 
 6. List the steps necessary to pipeline the data into the chosen data model
 
