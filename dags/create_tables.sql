@@ -24,34 +24,34 @@ CREATE TABLE IF NOT EXISTS public.staging_results (
 );
 
 CREATE TABLE IF NOT EXISTS public.test_result (
-	test_id integer(10) NOT NULL,
-	vehicle_id integer(10) NOT NULL,
+	test_id smallint NOT NULL,
+	vehicle_id smallint NOT NULL,
 	test_date date,
-	test_class_id integer(2),
+	test_class_id smallint,
 	test_type char(2),
 	test_result char(5),
-	test_mileage integer(7),
+	test_mileage smallint,
 	postcode_area char(2),
 	CONSTRAINT test_result_pkey PRIMARY KEY (test_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.test_item (
 	id integer IDENTITY NOT NULL,
-	test_id integer(10) NOT NULL,
-	rfr_id integer(4),
+	test_id smallint NOT NULL,
+	rfr_id smallint,
 	rfr_type_code char(1),
-	location_id integer(4),
+	location_id smallint,
 	dangerous_mark char(1),
 	CONSTRAINT test_item_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS public.vehicle (
-	vehicle_id integer(10) NOT NULL,
+	vehicle_id smallint NOT NULL,
 	make char(50),
 	model char(50),
 	colour char(16),
 	fuel_type char(2),
-	cylinder_capacity integer(10),
+	cylinder_capacity smallint,
 	first_use_date date,
 	CONSTRAINT vehicle_pkey PRIMARY KEY (vehicle_id)
 );
